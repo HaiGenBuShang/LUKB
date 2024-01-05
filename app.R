@@ -51,10 +51,6 @@ ui <- secure_app(
   ui
 )
 
-
-
-
-
 server <- function(input, output, session) {
   auth_res <- secure_server(check_credentials = check_credentials(credentials),timeout = 30,keep_token = TRUE)
   
@@ -62,12 +58,20 @@ server <- function(input, output, session) {
   
   data_success <- DatasetServer("Dataset",authorised_user = authorised_user,auth_res = auth_res,
                                 success_info = basket_success)
-  DataCleaningServer("Datacleaning",authorised_user = authorised_user,auth_info = auth_res,success_info = data_success,
-                     UKB_data_dict = UKB_data_dict,UKB_codings=UKB_codings)
+  sharing_success <- DataCleaningServer("Datacleaning",authorised_user = authorised_user,auth_info = auth_res,
+                                        success_info = data_success$success_info,
+                                        UKB_data_dict = UKB_data_dict,UKB_codings=UKB_codings)
   
-  View_shared_filesServer("Shared_data",auth_info = auth_res,authorised_user = authorised_user)
+  sharing_info <- reactive(c(data_success$sharing_info(),
+                             sharing_success$sharing_info_mapped(),
+                             sharing_success$sharing_info_remapped()))
+  
+  View_shared_filesServer("Shared_data",auth_info = auth_res,authorised_user = authorised_user,
+                          sharing_success_info = sharing_info
+  )
   
 }
+
 
 
 shinyApp(ui, server,options = list(host = "0.0.0.0",port = 1111))
