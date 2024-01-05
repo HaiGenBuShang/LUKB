@@ -66,13 +66,13 @@ UKB_data_addServer <- function(id,authorised_user,auth_res) {
     
     
     observeEvent(input$check_status,{
-      if(identical(task_info()$get_exit_status(),as.integer(0)))
+      if(!system(paste0("grep 'Check and unpack finished!' ",paste0("UKB_data/",input$dataset_file_string) %>% 
+                        str_replace_all("\\.enc","_prepare.log")," > /dev/null")))
         shinyjs::enable("Data_prepare")
     })
     
     Dataset_status_info <- eventReactive(input$check_status,{
-      if(identical(task_info()$get_exit_status(),as.integer(0))&
-        !system(paste0("grep 'Check and unpack finished!' ",paste0("UKB_data/",input$UKB_enc$name) %>% 
+      if(!system(paste0("grep 'Check and unpack finished!' ",paste0("UKB_data/",input$dataset_file_string) %>% 
                         str_replace_all("\\.enc","_prepare.log")," > /dev/null"))){
         c("Your dataset has been added!")
       }else{
@@ -84,8 +84,7 @@ UKB_data_addServer <- function(id,authorised_user,auth_res) {
     output$data_status <- renderPrint(Dataset_status_info())
     
     success_info <- eventReactive(input$check_status,{
-      if_else(identical(task_info()$get_exit_status(),as.integer(0))&
-                !system(paste0("grep 'Check and unpack finished!' ",paste0("UKB_data/",input$UKB_enc$name) %>% 
+      if_else(!system(paste0("grep 'Check and unpack finished!' ",paste0("UKB_data/",input$dataset_file_string) %>% 
                                 str_replace_all("\\.enc","_prepare.log")," > /dev/null")),1,0)
     })
     
