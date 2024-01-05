@@ -8,14 +8,11 @@ DatadownloadUI <- function(id) {
 
 DatadownloadServer <- function(id,auth_user,auth_info,file_to_be_downloaded) {
   moduleServer(id, function(input, output, session) {
-    
     user <- reactive({
-      # browser()
       reactiveValuesToList(auth_info)$user 
     })
-    
-    Data_shareServer("data_sharing",shared_file = file_to_be_downloaded)
+    sharing_info <- Data_shareServer("data_sharing",shared_file = file_to_be_downloaded)
     output$download <- download_file(file_name = file_to_be_downloaded,user = user,authorised_user = auth_user)
-    
+    sharing_info
   })
 }

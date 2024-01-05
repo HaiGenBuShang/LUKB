@@ -19,18 +19,14 @@ DatasetServer <- function(id,authorised_user,auth_res,success_info) {
     
     field_info <- choosefieldsServer("field",ukb_table=basket_info$ukb_table,ukb_basket_file=basket_info$basket_file)
     dataset_info <- GenerateDatasetServer("dataset",field_data = field_info,ukb_basket_file=basket_info$basket_file)
-    DatadownloadServer("download",auth_user = authorised_user,auth_info = auth_res,
+    sharing_info <- DatadownloadServer("download",auth_user = authorised_user,auth_info = auth_res,
                        file_to_be_downloaded=dataset_info$file_to_be_downloaded)
-    reactive(dataset_info$success_info())
+ 
+    reactiveValues(
+      success_info=reactive(dataset_info$success_info()),
+      sharing_info=reactive(sharing_info())
+    )
+    
   })
 }
 
-
-# ui <- fluidPage(
-#   DatasetUI("test")
-# )
-# server <- function(input,output,session){
-#   DatasetServer("test")
-# }
-# 
-# shinyApp(ui,server)

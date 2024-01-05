@@ -7,6 +7,7 @@ View_shared_filesUI <- function(id) {
         "Data file Remarks",
         verbatimTextOutput(NS(id,"shared_remarks")),
         hr(),
+        h5("Please note:\nThe downloads of your account will be recorded.\n"),
         downloadButton(NS(id,"download"),"Download This file!")
       ),
       mainPanel(
@@ -24,10 +25,16 @@ View_shared_filesServer <- function(id,auth_info,authorised_user,sharing_success
                         choices = list.files("Shared_data/",pattern = "csv"))
     })
     
+    observeEvent(sharing_success_info(),{
+      req(sharing_success_info())
+      if(sum(sharing_success_info())>0)
+        updateSelectInput(session,"shared_files","Select one shared data file to preview",
+                          choices = list.files("Shared_data/",pattern = "csv"))
+    })
+    
     user <- reactive({
       reactiveValuesToList(auth_info)$user 
     })
-    
     
     files_to_download <- reactive({
       req(input$shared_files)
@@ -48,4 +55,3 @@ View_shared_filesServer <- function(id,auth_info,authorised_user,sharing_success
     
   })
 }
-

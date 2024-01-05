@@ -73,7 +73,6 @@ DataCleaningServer <- function(id,auth_info,authorised_user,success_info,UKB_dat
     
     observeEvent(format_pass(),{
       
-      
       waiter <- waiter::Waiter$new()
       waiter$show()
       on.exit(waiter$hide())
@@ -84,6 +83,7 @@ DataCleaningServer <- function(id,auth_info,authorised_user,success_info,UKB_dat
       write.table(mapped_dat,file = paste0("Results/",dat_file_for_cleaning()$name %>% 
                                              str_remove(".csv") %>% str_c("_mapped.csv")),
                   col.names = TRUE,row.names = FALSE,sep = ",")
+      
     })
     
     mapped_file <- eventReactive(format_pass(),{
@@ -107,7 +107,7 @@ DataCleaningServer <- function(id,auth_info,authorised_user,success_info,UKB_dat
     output$download_mapped <- download_file(file_name = mapped_file,user = user,authorised_user = authorised_user)
     
     ####
-    Data_shareServer("mapped_data_sharing",shared_file = mapped_file)
+    sharing_info_mapped <- Data_shareServer("mapped_data_sharing",shared_file = mapped_file)
     ####
     
     data_previewServer("preview_mapped",preview_files = mapped_file,preview_text="Data preview")
@@ -121,9 +121,10 @@ DataCleaningServer <- function(id,auth_info,authorised_user,success_info,UKB_dat
     })
     
     ####
-    Data_shareServer("remapped_data_sharing",shared_file = remapped_file)
+    sharing_info_remapped <- Data_shareServer("remapped_data_sharing",shared_file = remapped_file)
     ####
     output$download_remapped <- download_file(file_name = remapped_file,user = user,authorised_user = authorised_user)
     
+    reactiveValues(sharing_info_mapped=reactive(sharing_info_mapped()),sharing_info_remapped=reactive(sharing_info_remapped()))
   })
 }

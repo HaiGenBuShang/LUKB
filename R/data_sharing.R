@@ -2,7 +2,6 @@ modal_sharing_data <- function(session){
   ns <- session$ns
   modalDialog(
     HTML("You can write the data remarks, such as fields/fields ID it contains.<br>"),
-    # textInput(ns("remark"),"Data Remarks"),
     textAreaInput(ns("remark"),"Data Remarks",height = "100px"),
     title = "Data Sharing",
     footer = tagList(
@@ -43,8 +42,11 @@ Data_shareServer <- function(id,shared_file) {
                   row.names = FALSE,col.names = FALSE,sep = "\n",quote = FALSE)
     })
     
+    sharing_info <- reactiveVal(0)
+    observeEvent(input$ok,{
+      sharing_info(sharing_info()+1)
+    })
+    
+    sharing_info
   })
 }
-
-
-
