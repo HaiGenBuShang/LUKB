@@ -21,7 +21,7 @@ GenerateDatasetUI <- function(id) {
     actionButton(NS(id,"generate"),"Extract data!"),
     verbatimTextOutput(NS(id,"Dataset_file")),
     hr(),
-    textInput(NS(id,"dataset_file_string"),"Check your dataset status",
+    textInput(NS(id,"dataset_file_string"),"Check your data extraction status",
               placeholder = "Please enter the name of your dataset:\n"),
     actionButton(NS(id,"check_status"),"Check extraction status"),
     verbatimTextOutput(NS(id,"Dataset_status")),

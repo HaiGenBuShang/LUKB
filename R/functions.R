@@ -99,5 +99,13 @@ sys_time <- function(){
   format(Sys.time(), "%Y%m%d_%H%M%S")
 }
 
-
+finished_dataset <- function(dataset_dir){
+  log_files <- list.files(path = dataset_dir,pattern = "prepare.log$",full.names = TRUE)
+  finishing_info <- sapply(log_files,function(x){
+    system(paste("grep 'Check and unpack finished'",x),ignore.stdout = TRUE,ignore.stderr = TRUE)
+  })
+  
+  finished_data <- names(finishing_info[finishing_info==0])
+  finished_data %>% str_replace_all(".*/(.*)_prepare.log","\\1") %>% str_c(".enc")
+}
 

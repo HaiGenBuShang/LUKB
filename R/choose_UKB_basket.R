@@ -3,7 +3,8 @@ library(rvest)
 Choose_UKB_basketUI <- function(id) {
   tagList(
     selectInput(NS(id,"basket_file"),label = "Choose one UKB dataset",
-                choices = list.files("UKB_data/",pattern = "enc$")),
+                # choices = list.files("UKB_data/",pattern = "enc$")),
+                choices = finished_dataset(dataset_dir = "UKB_data/")),
     
   )
 }
@@ -14,14 +15,16 @@ Choose_UKB_basketServer <- function(id,success_info) {
     
     observeEvent(session$clientData,{
       updateSelectInput(session,"basket_file","Choose one UKB dataset",
-                        choices = list.files("UKB_data/",pattern = "enc$"))
+                        # choices = list.files("UKB_data/",pattern = "enc$"))
+                        choices = finished_dataset(dataset_dir = "UKB_data/"))
     })
     
     observeEvent(success_info(),{
       req(success_info)
       if(success_info()==1)
         updateSelectInput(session,"basket_file","Choose one UKB dataset",
-                          choices = list.files("UKB_data/",pattern = "enc$"))
+                          # choices = list.files("UKB_data/",pattern = "enc$"))
+                          choices = finished_dataset(dataset_dir = "UKB_data/"))
     })
     
     UKB_html_table <- reactive({
