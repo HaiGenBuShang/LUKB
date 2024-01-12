@@ -18,7 +18,7 @@ DatadownloadServer <- function(id,auth_user,auth_info,success_info) {
       req(user())
       ns <- session$ns
       selectInput(ns("choosed_file"),"Choose your data file to download",
-                  choices = finished_data_extraction(data_dir = "Results/",user = user()))
+                  choices = finished_data_extraction(data_dir = "Results/",user = user()),width = "25%")
     })
     
     output$choose_file_ui <- renderUI({
@@ -29,7 +29,7 @@ DatadownloadServer <- function(id,auth_user,auth_info,success_info) {
       req(success_info())
       if(success_info()==1)
         updateSelectInput(session,"choosed_file","Choose your data file to download",
-                          choices = finished_data_extraction(data_dir = "Results/",user = user()))
+                          choices = finished_data_extraction(data_dir = "Results/",user = user()),width = "25%")
     })
     
     file_to_be_downloaded <- eventReactive(input$choosed_file,{
