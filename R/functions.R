@@ -49,23 +49,42 @@ remove_file <- function(file,time_to_delete){#deleting time in seconds
   system(remove_command)
 }
 
-generate_file <- function(UKB_file,UKB_field,date_file){
-  write.table(UKB_field,file = paste0(date_file,"_selected_f.txt"),
-              sep = "\t",row.names = FALSE,col.names = FALSE,quote = FALSE)
-  p1 <- processx::process$new(command = "./utilities/ukbconv",
-                              args = c(UKB_file,"csv",paste0("-o",date_file),
-                                       paste0("-i",paste0(date_file,"_selected_f.txt"))),
-                              stdout = paste0(date_file,".log"),
-                              stderr = "2>&1"
-                              # stdout = "|",
-                              # stderr = "|"
-  )
-  p2 <- processx::process$new(command = "rm",
-                              args = paste0(date_file,"_selected_f.txt"))
+# generate_file <- function(UKB_file,UKB_field,date_file){
+#   write.table(UKB_field,file = paste0(date_file,"_selected_f.txt"),
+#               sep = "\t",row.names = FALSE,col.names = FALSE,quote = FALSE)
+#   p1 <- processx::process$new(command = "./utilities/ukbconv",
+#                               args = c(UKB_file,"csv",paste0("-o",date_file),
+#                                        paste0("-i",paste0(date_file,"_selected_f.txt"))),
+#                               stdout = paste0(date_file,".log"),
+#                               stderr = "2>&1"
+#                               # stdout = "|",
+#                               # stderr = "|"
+#   )
+#   p2 <- processx::process$new(command = "rm",
+#                               args = paste0(date_file,"_selected_f.txt"))
+# 
+#   p1
+#   
+# }
 
-  p1
+generate_file <- function(UKB_file,UKB_field,date_file){
+  # write.table(UKB_field,file = paste0(date_file,"_selected_f.txt"),
+  #             sep = "\t",row.names = FALSE,col.names = FALSE,quote = FALSE)
+  
+  #waive using write.table for that the write.table function is finished, but the file is still being writing
+  system(paste0("echo ",UKB_field," > ", paste0(date_file,"_selected_f.txt")))
+  
+  
+  system(command = paste0("./utilities/ukbconv ",UKB_file," csv ",
+                          paste0("-o",date_file)," ",
+                          paste0("-i",paste0(date_file,"_selected_f.txt"))," > ", 
+                          paste0(date_file,".log")," 2>&1"),
+         wait = FALSE)
+  system(command = paste0("rm ",date_file,"_selected_f.txt"))
   
 }
+
+
 
 
 
@@ -108,4 +127,18 @@ finished_dataset <- function(dataset_dir){
   finished_data <- names(finishing_info[finishing_info==0])
   finished_data %>% str_replace_all(".*/(.*)_prepare.log","\\1") %>% str_c(".enc")
 }
+
+
+finished_data_extraction <- function(data_dir,user,log_finish_info="Output finished"){
+  log_files <- list.files(path = data_dir,pattern = paste0(".*_",user,"_.*[0-9].log$"),full.names = TRUE)
+  finishing_info <- sapply(log_files,function(x){
+    system(paste0("grep '",log_finish_info,"' ",x),ignore.stdout = TRUE,ignore.stderr = TRUE)
+  })
+  finished_data <- names(finishing_info[finishing_info==0])
+  finished_data %>% str_replace_all(".*/(.*).log","\\1") %>% str_c(".csv")
+}
+
+
+
+
 

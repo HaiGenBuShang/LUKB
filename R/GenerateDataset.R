@@ -21,10 +21,9 @@ GenerateDatasetUI <- function(id) {
     actionButton(NS(id,"generate"),"Extract data!"),
     verbatimTextOutput(NS(id,"Dataset_file")),
     hr(),
-    textInput(NS(id,"dataset_file_string"),"Check your data extraction status",
-              placeholder = "Please enter the name of your dataset:\n"),
-    actionButton(NS(id,"check_status"),"Check extraction status"),
-    verbatimTextOutput(NS(id,"Dataset_status")),
+    
+    ShowCurrentJobUI(NS(id,"current_job")),
+    
   )
 }
 
@@ -32,7 +31,7 @@ GenerateDatasetUI <- function(id) {
 
 
 
-GenerateDatasetServer <- function(id,field_data,ukb_basket_file) {
+GenerateDatasetServer <- function(id,field_data,ukb_basket_file,auth_info) {
   moduleServer(id, function(input, output, session) {
     observeEvent(input$generate,{
       showModal(modal_confirm(session))
@@ -47,23 +46,19 @@ GenerateDatasetServer <- function(id,field_data,ukb_basket_file) {
       removeModal()
     })
     
+    user <- reactive({
+      reactiveValuesToList(auth_info)$user 
+    })
+    
     date_file <- eventReactive(input$ok,{
-      paste0("Results/UKB_",field_data()$FieldID[1],"_",format(Sys.time(), "%Y%m%d_%H%M%S"))
+      paste0("Results/UKB_",user(),"_",field_data()$FieldID[1],"_",sys_time())
     })
     
-    
-    
-    task_info <- eventReactive(input$ok,{
+    observeEvent(date_file(),{
       shinyjs::disable("generate")
-      process_x <- generate_file(UKB_file = paste0("./UKB_data/",ukb_basket_file(),"_ukb"),
-                                 UKB_field = field_data()$FieldID,
-                                 date_file = date_file())
-      #must do this or the command might not reponse
-      process_x
-    })
-    
-    observeEvent(task_info(),{
-      task_info()$get_exit_status()
+      generate_file(UKB_file = paste0("./UKB_data/",ukb_basket_file(),"_ukb"),
+                    UKB_field = field_data()$FieldID,
+                    date_file = date_file())
     })
     
     Dataset_file <- eventReactive(date_file(),{
@@ -72,41 +67,27 @@ GenerateDatasetServer <- function(id,field_data,ukb_basket_file) {
              "Included fields:\n",paste0(field_data()$field,collapse = ", "))
     })
     
-    output$Dataset_file <- renderText({
-      Dataset_file()
+    observeEvent(Dataset_file(),{
+      system(paste0("echo '",Dataset_file(),"' > ","Results/",user(),"_extraction_file_info.log"))
     })
     
-    observeEvent(input$check_status,{
-      if(identical(task_info()$get_exit_status(),as.integer(0)))
+    
+    file_to_be_downloaded <- eventReactive(date_file(),{
+      paste0("Results/",date_file() %>% str_remove(".*/"),".csv")
+    })
+    
+    success_info <- ShowCurrentJobServer("current_job",user = user)
+    
+    observeEvent(success_info(),{
+      if(success_info()==1){
         shinyjs::enable("generate")
-    })
-    
-    
-    Dataset_status_info <- eventReactive(input$check_status,{
-      if(!system(paste0("grep 'Output finished' Results/",
-                        paste0(input$dataset_file_string %>% str_trim(side = "both") %>% str_remove("\\..*"),
-                               ".log > /dev/null")))){
-        c("Your dataset has been extracted!","Your data will be deleted in at most 48 hours, proceed in time.")
       }else{
-        read.table(paste0("Results/",input$dataset_file_string %>% str_trim(side = "both") %>% str_remove("\\..*"),
-                          ".log"),sep = "\n",header = FALSE)
+        shinyjs::disable("generate")
       }
     })
     
-    success_info <- eventReactive(input$check_status,{
-      if_else(!system(paste0("grep 'Output finished' Results/",
-                             paste0(input$dataset_file_string %>% str_trim(side = "both") %>% str_remove("\\..*"),
-                                    ".log > /dev/null"))),1,0)
-    })
-    
-    output$Dataset_status <- renderPrint(Dataset_status_info())
-    
-    file_to_be_downloaded <- eventReactive(input$check_status,{
-      paste0("Results/",input$dataset_file_string)
-    })
-    
     reactiveValues(success_info=success_info,file_to_be_downloaded=file_to_be_downloaded)
-    
+
   })
 }
 
