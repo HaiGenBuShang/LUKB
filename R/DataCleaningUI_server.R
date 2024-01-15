@@ -5,7 +5,7 @@ DataCleaningUI <- function(id) {
       sidebarPanel(
         fileInput(NS(id,"up_file"),"Upload your dataset"),
         selectInput(NS(id,"choosed_file"),"Or Choose your dataset",
-                    choices = list.files("Results/",pattern = "[0-9]\\.csv")),
+                    choices = list.files("Results/",pattern = "[0-9]\\.csv") %>% str_subset("preview",negate = TRUE)),
         waiter::use_waiter(),
         actionButton(NS(id,"mapping"),"Data map"),
         verbatimTextOutput(NS(id,"mapping_status")),
@@ -41,14 +41,14 @@ DataCleaningServer <- function(id,auth_info,authorised_user,success_info,UKB_dat
     
     observeEvent(session$clientData,{
       updateSelectInput(session,"choosed_file","Or Choose your dataset",
-                        choices = list.files("Results/",pattern = "[0-9]\\.csv"))
+                        choices = list.files("Results/",pattern = "[0-9]\\.csv") %>% str_subset("preview",negate = TRUE))
     })
     
     observeEvent(success_info(),{
       req(success_info)
       if(success_info()==1)
         updateSelectInput(session,"choosed_file","Or Choose your dataset",
-                          choices = list.files("Results/",pattern = "[0-9]\\.csv"))
+                          choices = list.files("Results/",pattern = "[0-9]\\.csv") %>% str_subset("preview",negate = TRUE) )
     })
     
     

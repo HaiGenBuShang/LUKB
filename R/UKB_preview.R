@@ -6,7 +6,7 @@ UKB_previewUI <- function(id) {
   tagList(
     hr(),
     waiter::use_waiter(),
-    actionButton(NS(id,"preview"),"Preview your dataset"),
+    actionButton(NS(id,"preview"),"Preview your data"),
     DT::dataTableOutput(NS(id,"preview_tab")),
     hr(),
   )
@@ -27,8 +27,8 @@ UKB_previewServer <- function(id,preview_UKB_file,field_info) {
       waiter$show()
       on.exit(waiter$hide())
       
-      p <- generate_file(UKB_file = preview_UKB_file(),UKB_field = fields(),date_file = date_file())
-      p$wait()
+      p <- generate_file(UKB_file = preview_UKB_file(),UKB_field = fields(),date_file = date_file(),ukbconv_wait=TRUE)
+      # p$wait()
       dat <- fread(paste0(date_file(),".csv")) %>% as_tibble()
     })
     output$preview_tab <- DT::renderDataTable({

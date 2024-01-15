@@ -29,7 +29,7 @@ DatadownloadServer <- function(id,auth_user,auth_info,success_info) {
       req(success_info())
       if(success_info()==1)
         updateSelectInput(session,"choosed_file","Choose your data file to download",
-                          choices = finished_data_extraction(data_dir = "Results/",user = user()),width = "25%")
+                          choices = finished_data_extraction(data_dir = "Results/",user = user()))
     })
     
     file_to_be_downloaded <- eventReactive(input$choosed_file,{
