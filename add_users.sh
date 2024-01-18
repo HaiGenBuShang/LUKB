@@ -1,6 +1,6 @@
 mkdir ../UKB_accounts -p
 
-if [ ! -a ../UKB_accounts/accounts ]; then
+if [ ! -f ../UKB_accounts/accounts ]; then
 	printf "user\tpassword\tauthorised\n" > ../UKB_accounts/accounts 
 fi
 
