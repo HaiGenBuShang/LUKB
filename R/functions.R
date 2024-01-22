@@ -74,17 +74,17 @@ generate_file <- function(UKB_file,UKB_field,date_file,ukbconv_wait=FALSE){
   #waive using write.table for that the write.table function is finished, but the file is still being writing
   # system(paste0("echo ",UKB_field," > ", paste0(date_file,"_selected_f.txt","; echo $? > dev/null")),wait = TRUE)
   system(paste0("printf '",paste0(UKB_field,collapse = "\n"),"' > ", 
-                paste0(date_file,"_selected_f.txt","; echo $? > /dev/null")),wait = TRUE)
+                paste0(date_file %>% str_remove_all("UKB_"),"_S_F.txt","; echo $? > /dev/null")),wait = TRUE)
   
   
   system(command = paste0(#"sleep 5",#to ensure that the last step file writing was finished, we wait for 5 seconds
                           "./utilities/ukbconv ",UKB_file," csv ", 
                           #to ensure that the last step file writing was finished, we wait for 5 seconds
                           paste0("-o",date_file)," ",
-                          paste0("-i",paste0(date_file,"_selected_f.txt"))," > ", 
+                          paste0("-i",paste0(date_file %>% str_remove_all("UKB_"),"_S_F.txt"))," > ", 
                           paste0(date_file,".log")," 2>&1"),
          wait = ukbconv_wait)
-  system(command = paste0("rm ",date_file,"_selected_f.txt"))
+  system(command = paste0("rm ",date_file %>% str_remove_all("UKB_"),"_S_F.txt"))
   
 }
 

@@ -4,7 +4,12 @@ if [ ! -f ../UKB_accounts/accounts ]; then
         printf "user\tpassword\tauthorised\n" > ../UKB_accounts/accounts
 fi
 
-read -p "Type the user name: " user_name
+while :
+do
+        read -p "user name (max length 25): " user_name
+        [ ${#user} -le 25 ] && [ -n "${user}" ] && break
+done
+
 read -p "Type the password: " passwd
 read -p "Give data donwload permision? [TRUE/FALSE] " permission
 
