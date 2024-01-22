@@ -7,7 +7,7 @@ fi
 while :
 do
         read -p "user name (max length 25): " user_name
-        [ ${#user} -le 25 ] && [ -n "${user}" ] && break
+        [ ${#user_name} -le 25 ] && [ -n "${user_name}" ] && break
 done
 
 read -p "Type the password: " passwd
