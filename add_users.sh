@@ -1,7 +1,7 @@
 mkdir ../UKB_accounts -p
 
 if [ ! -f ../UKB_accounts/accounts ]; then
-	printf "user\tpassword\tauthorised\n" > ../UKB_accounts/accounts 
+        printf "user\tpassword\tauthorised\n" > ../UKB_accounts/accounts
 fi
 
 read -p "Type the user name: " user_name
