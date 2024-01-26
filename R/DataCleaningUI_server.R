@@ -3,8 +3,8 @@ DataCleaningUI <- function(id) {
   tagList(
     sidebarLayout(
       sidebarPanel(
-        fileInput(NS(id,"up_file"),"Upload your dataset"),
-        selectInput(NS(id,"choosed_file"),"Or Choose your dataset",
+        fileInput(NS(id,"up_file"),"Upload your extracted data file"),
+        selectInput(NS(id,"choosed_file"),"Or Choose your extracted data file",
                     choices = list.files("Results/",pattern = "[0-9]\\.csv") %>% str_subset("preview",negate = TRUE)),
         waiter::use_waiter(),
         actionButton(NS(id,"mapping"),"Data map"),
@@ -20,7 +20,7 @@ DataCleaningUI <- function(id) {
     Data_shareUI(NS(id,"mapped_data_sharing")),
     
     hr(),
-    h3("Ignore This If the Mapped Dataset Satisfies You."),
+    h3("Ignore This If the Mapped Data Satisfies You."),
     sidebarLayout(
       sidebarPanel(
         Code_remappingUI(NS(id,"remapping")),
@@ -40,14 +40,14 @@ DataCleaningServer <- function(id,auth_info,authorised_user,success_info,UKB_dat
   moduleServer(id, function(input, output, session) {
     
     observeEvent(session$clientData,{
-      updateSelectInput(session,"choosed_file","Or Choose your dataset",
+      updateSelectInput(session,"choosed_file","Or Choose your extracted data file",
                         choices = list.files("Results/",pattern = "[0-9]\\.csv") %>% str_subset("preview",negate = TRUE))
     })
     
     observeEvent(success_info(),{
       req(success_info)
       if(success_info()==1)
-        updateSelectInput(session,"choosed_file","Or Choose your dataset",
+        updateSelectInput(session,"choosed_file","Or Choose your extracted data file",
                           choices = list.files("Results/",pattern = "[0-9]\\.csv") %>% str_subset("preview",negate = TRUE) )
     })
     
