@@ -84,7 +84,7 @@ generate_file <- function(UKB_file,UKB_field,date_file,ukbconv_wait=FALSE){
                           paste0("-i",paste0(date_file %>% str_remove_all("UKB_"),"_S_F.txt"))," > ", 
                           paste0(date_file,".log")," 2>&1"),
          wait = ukbconv_wait)
-  system(command = paste0("rm ",date_file %>% str_remove_all("UKB_"),"_S_F.txt"))
+  system(command = paste0("sleep 5s; rm ",date_file %>% str_remove_all("UKB_"),"_S_F.txt"))
   
 }
 
@@ -143,6 +143,183 @@ finished_data_extraction <- function(data_dir,user,log_finish_info="Output finis
 }
 
 
+dat_summary <- function(UKB_dat,selected_var,subset_var,subset_thres,
+                        statistic_count_or_proportion,legend_position,x_lab,remove_na = FALSE){
+  proportion_or_count <- statistic_count_or_proportion
+  count_lab <- switch(proportion_or_count,
+                      proportion = "Proportion",
+                      count = "Count (1000s)"
+  )
+  
+  format_cnt <- switch(proportion_or_count,
+                       # proportion = waiver(),
+                       proportion = function(x) format(x,nsmall = 2),
+                       count = function(x) format(round(x/1000))
+  )
+  
+  bar_pos <- switch(
+    proportion_or_count,
+    proportion = "fill",
+    count = "stack"
+  )
+  
+  gg_dat <- if(UKB_dat[[subset_var]] %>% class() == "character"){
+    UKB_dat %>% mutate(fill.var= !!sym(subset_var)%in%c(subset_thres))
+  }else{
+    UKB_dat %>% mutate(fill.var= !!sym(subset_var) >= subset_thres)
+  }
+  
+  gg_dat <- if(remove_na){
+    gg_dat %>% mutate(fill.var=ifelse(is.na(!!sym(subset_var)),NA,fill.var)) %>% filter(!is.na(fill.var))
+  } else{
+    gg_dat %>% mutate(fill.var=ifelse(is.na(!!sym(subset_var)),NA,fill.var))
+  }
+  
+  
+  gg_dat <- gg_dat %>% 
+    mutate(category=ifelse(fill.var,"Subset","Reference"),color=ifelse(fill.var,"hotpink","grey35")) %>% 
+    mutate(color=ifelse(is.na(fill.var),"grey65",color)) %>% 
+    mutate(color=factor(color,levels = c("grey35","hotpink","grey65"))) %>% arrange(color)
+  
+  
+  # if(is.numeric(UKB_dat %>% pull(!!selected_var))){
+  #   gg_dat %>% 
+  #     ggplot2::ggplot(aes(!!sym(selected_var), fill = color, color = alpha(color,alpha = 0))) + geom_density(na.rm = TRUE) + 
+  #     
+  #     scale_fill_identity(labels=gg_dat$category,breaks=gg_dat$color,guide = "legend")+
+  #     scale_color_identity(labels=gg_dat$category,breaks=alpha(gg_dat$color,alpha = 0)) +
+  #     
+  #     theme(legend.position = legend_position, legend.title = element_blank(),
+  #           axis.title.y = element_text(face = "bold"),  panel.grid = element_blank())+
+  #     labs(x = x_lab)
+  # }else{gg_dat %>%  
+  #     ggplot2::ggplot(aes(!!sym(selected_var), fill = color)) + 
+  #     # geom_bar(position = "fill", na.rm = TRUE, width = 0.5) + 
+  #     geom_bar(position = bar_pos, na.rm = TRUE, width = 0.5) + 
+  #     
+  #     scale_fill_identity(labels=gg_dat$category,breaks=gg_dat$color,guide = "legend")+
+  #     
+  #     scale_y_continuous(labels = format_cnt) + 
+  #     theme(legend.position = legend_position, legend.title = element_blank(), axis.title.y = element_text(face = "bold"), 
+  #           panel.grid = element_blank()) + labs(x = x_lab, 
+  #                                                y = count_lab) + coord_flip()
+  # }
+  
+  if(is.numeric(UKB_dat %>% pull(!!selected_var))){
+    gg_dat %>% 
+      ggplot2::ggplot(aes(!!sym(selected_var), fill = alpha(color,alpha = 0.5), color = color)) + 
+      geom_density(na.rm = TRUE) + 
+      
+      scale_fill_identity(labels=gg_dat$category,breaks=alpha(gg_dat$color,alpha = 0.5),
+                          guide=guide_legend(override.aes = list(color=NA)))+
+      scale_color_identity(labels=gg_dat$category,breaks=gg_dat$color) +
+      
+      theme(legend.position = legend_position, legend.title = element_blank(),
+            axis.title.y = element_text(face = "bold"),  panel.grid = element_blank())+
+      labs(x = x_lab) 
+  }else{gg_dat %>%  
+      ggplot2::ggplot(aes(!!sym(selected_var), fill = color)) + 
+      # geom_bar(position = "fill", na.rm = TRUE, width = 0.5) + 
+      geom_bar(position = bar_pos, na.rm = TRUE, width = 0.5) + 
+      
+      scale_fill_identity(labels=gg_dat$category,breaks=gg_dat$color,guide = "legend")+
+      
+      scale_y_continuous(labels = format_cnt) + 
+      theme(legend.position = legend_position, legend.title = element_blank(), axis.title.y = element_text(face = "bold"), 
+            panel.grid = element_blank()) + labs(x = x_lab, 
+                                                 y = count_lab) + coord_flip()
+  }
+  
+  
+}
 
 
+
+#The function ukb_icd_freq_by
+#LUKB_ukb_icd_freq_by  
+LUKB_ukb_icd_freq_by <- function (data, reference.var, n.groups = 10, 
+                                  icd.code = c("I70","I"), 
+                                  icd.labels = NULL, 
+                                  plot.title = "", legend.col = 1, legend.pos = "right", icd.version = 10, 
+                                  freq.plot = FALSE, reference.lab = "Reference variable", 
+                                  freq.lab = "UKB disease frequency") {
+  if(!is.null(icd.labels)){
+    cat("Please make sure  your ICD labels matches your ICD codes!\n")
+    if(length(icd.labels)!=length(icd.code)){
+      stop("The numbers of ICD labels and of ICD codes are not matched!") 
+    } else if (any(icd.labels%in%c("lower","upper"))) {
+      stop("Please check your ICD labels!") 
+    }
+  } else {
+    icd.labels <- icd.code
+  }
+  
+  data <- data %>% dplyr::select(reference.var, matches(paste("^diagnoses.*icd",icd.version, sep = ""))) %>% 
+    dplyr::filter(!is.na(.[[reference.var]]))
+  
+  if (is.character(data[[reference.var]])) {
+    data[["categorized_var"]] <- data[[reference.var]]
+  } else {
+    data[["categorized_var"]] <- factor(ggplot2::cut_number(data[[reference.var]], 
+                                                            n = n.groups), ordered = TRUE)
+  }
+  
+  df <- data %>% dplyr::group_by(categorized_var) %>% tidyr::nest(.key = "dx")
+  code_freq <- function(df, icd.code, icd.labels) {
+    f <- purrr::map_dbl(icd.code, ~ukb_icd_prevalence(df,.x,icd.version = 10))
+    f <- matrix(f, nrow = 1) %>% as.data.frame()
+    names(f) = icd.labels
+    return(f)
+  }
+  cl <- parallel::makeCluster(parallel::detectCores())
+  doParallel::registerDoParallel(cl)
+  dx_freq <- df %>% dplyr::mutate(freq = purrr::map(dx, code_freq, 
+                                                    icd.code,icd.labels)) %>% tidyr::unnest(freq)
+  doParallel::stopImplicitCluster()
+  parallel::stopCluster(cl)
+  
+  if (is.numeric(data[[reference.var]])) {
+    dx_freq[["tile_range"]] <- gsub("\\(|\\[|\\]", "", dx_freq$categorized_var)
+    dx_freq <- dx_freq %>% tidyr::separate(tile_range, into = c("lower", "upper"), 
+                                           sep = ",", convert = TRUE) %>% dplyr::arrange(lower)
+  }
+  
+  if(freq.plot){
+    if (is.numeric(data[[reference.var]])) {
+      p <- dx_freq %>% dplyr::mutate(mid = (lower + upper)/2) %>%
+        tidyr::gather(key = "disease", value = "frequency",
+                      -categorized_var, -lower, -upper, -mid,-dx) %>%
+        ggplot2::ggplot(aes(mid, frequency, group = disease,
+                            color = disease)) + labs(x = reference.lab,
+                                                     y = freq.lab, color = "", fill = "", title = plot.title) +
+        theme(title = element_text(face = "bold"), panel.grid = element_blank(),
+              panel.background = element_rect(color = NULL,
+                                              fill = alpha("grey", 0.1)), legend.key = element_blank(),
+              axis.ticks.x = element_blank()) + scale_y_continuous(labels = scales::percent_format(2)) +
+        geom_point(size = 2) + geom_line(size = 0.5) +
+        guides(color = guide_legend(ncol = legend.col),
+               size = FALSE, fill = FALSE) #+ scale_fill_discrete(labels = icd.labels)
+      
+      # print(p)
+    } else {
+      p <- dx_freq %>% tidyr::gather(key = "disease", value = "frequency",
+                                     -categorized_var,-dx) %>% ggplot2::ggplot(aes(categorized_var,
+                                                                                   frequency, group = disease, fill = disease)) +
+        labs(x = reference.lab, y = freq.lab, color = "",
+             fill = "", title = plot.title) +
+        theme(title = element_text(face = "bold"), panel.grid = element_blank(),
+              panel.background = element_rect(color = NULL, fill = alpha("grey", 0.1)),
+              legend.key = element_blank(), axis.ticks.x = element_blank()) +
+        scale_y_continuous(labels = scales::percent_format(2)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        guides(fill = guide_legend(ncol = legend.col),
+               size = FALSE, color = FALSE) #+ scale_fill_discrete(labels = icd.labels)
+      
+      # print(p)
+    }
+  }
+  
+  list(figure=p,dat=dx_freq %>% select(-dx))
+  
+}
 

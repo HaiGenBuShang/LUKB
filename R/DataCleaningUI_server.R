@@ -125,6 +125,18 @@ DataCleaningServer <- function(id,auth_info,authorised_user,success_info,UKB_dat
     ####
     output$download_remapped <- download_file(file_name = remapped_file,user = user,authorised_user = authorised_user)
     
-    reactiveValues(sharing_info_mapped=reactive(sharing_info_mapped()),sharing_info_remapped=reactive(sharing_info_remapped()))
+    
+    success_info <- eventReactive(mapping_status(),{
+      if(mapping_status()=="Cleaning Complete!\nYour Dataset will be deleted in at most 48 hours, proceed in time."){
+        1
+      }else{
+        0
+      }
+    })
+    
+    
+    reactiveValues(sharing_info_mapped=reactive(sharing_info_mapped()),
+                   sharing_info_remapped=reactive(sharing_info_remapped()),
+                   success_info=reactive(success_info()))
   })
 }

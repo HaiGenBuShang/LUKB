@@ -40,6 +40,10 @@ ui <- fluidPage(
              DatasetUI("Dataset")),
     tabPanel("Data Mapping",
              DataCleaningUI("Datacleaning")),
+    tabPanel("Data Summary",
+             data_summary_UI("Data_summary")),
+    tabPanel("ICD Data Summary",
+             ICD_summary_UI("ICD_summary")),
     tabPanel("Add Dataset",
              UKB_data_addUI("Add_basket")),
     tabPanel("Shared Data",
@@ -61,6 +65,10 @@ server <- function(input, output, session) {
   sharing_success <- DataCleaningServer("Datacleaning",authorised_user = authorised_user,auth_info = auth_res,
                                         success_info = data_success$success_info,
                                         UKB_data_dict = UKB_data_dict,UKB_codings=UKB_codings)
+  
+  data_summary_Server("Data_summary",success_info = sharing_success$success_info)
+  
+  ICD_summary_Server("ICD_summary",success_info = sharing_success$success_info)
   
   sharing_info <- reactive(c(data_success$sharing_info(),
                              sharing_success$sharing_info_mapped(),
