@@ -182,29 +182,6 @@ dat_summary <- function(UKB_dat,selected_var,subset_var,subset_thres,
     mutate(color=factor(color,levels = c("grey35","hotpink","grey65"))) %>% arrange(color)
   
   
-  # if(is.numeric(UKB_dat %>% pull(!!selected_var))){
-  #   gg_dat %>% 
-  #     ggplot2::ggplot(aes(!!sym(selected_var), fill = color, color = alpha(color,alpha = 0))) + geom_density(na.rm = TRUE) + 
-  #     
-  #     scale_fill_identity(labels=gg_dat$category,breaks=gg_dat$color,guide = "legend")+
-  #     scale_color_identity(labels=gg_dat$category,breaks=alpha(gg_dat$color,alpha = 0)) +
-  #     
-  #     theme(legend.position = legend_position, legend.title = element_blank(),
-  #           axis.title.y = element_text(face = "bold"),  panel.grid = element_blank())+
-  #     labs(x = x_lab)
-  # }else{gg_dat %>%  
-  #     ggplot2::ggplot(aes(!!sym(selected_var), fill = color)) + 
-  #     # geom_bar(position = "fill", na.rm = TRUE, width = 0.5) + 
-  #     geom_bar(position = bar_pos, na.rm = TRUE, width = 0.5) + 
-  #     
-  #     scale_fill_identity(labels=gg_dat$category,breaks=gg_dat$color,guide = "legend")+
-  #     
-  #     scale_y_continuous(labels = format_cnt) + 
-  #     theme(legend.position = legend_position, legend.title = element_blank(), axis.title.y = element_text(face = "bold"), 
-  #           panel.grid = element_blank()) + labs(x = x_lab, 
-  #                                                y = count_lab) + coord_flip()
-  # }
-  
   if(is.numeric(UKB_dat %>% pull(!!selected_var))){
     gg_dat %>% 
       ggplot2::ggplot(aes(!!sym(selected_var), fill = alpha(color,alpha = 0.5), color = color)) + 
