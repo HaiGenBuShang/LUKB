@@ -6,8 +6,9 @@ data_summary_UI <- function(id) {
     fluidRow(
       column(6, align = "left",
              selectInput(NS(id,"choosed_file"),"Or Choose your mapped data file",
-                         choices = list.files("Results/",pattern = "mapped\\.csv") %>%
-                           str_subset("preview",negate = TRUE),width = "100%")),
+                         choices = c("",list.files("Results/",pattern = "mapped\\.csv") %>%
+                                       str_subset("preview",negate = TRUE)),
+                         selected = "",width = "100%")),
       column(6, align = "left",
              fileInput(NS(id,"up_file"),"Upload your extracted data after code mapping file",width = "100%")),
     ),
@@ -34,14 +35,18 @@ data_summary_Server <- function(id,success_info) {
     
     observeEvent(session$clientData,{
       updateSelectInput(session,"choosed_file","Or Choose your mapped data file",
-                        choices = list.files("Results/",pattern = "mapped\\.csv") %>% str_subset("preview",negate = TRUE))
+                        choices = c("",list.files("Results/",pattern = "mapped\\.csv") %>%
+                                      str_subset("preview",negate = TRUE)),
+                        selected = "")
     })
     
     observeEvent(success_info(),{
       req(success_info)
       if(success_info()==1)
         updateSelectInput(session,"choosed_file","Or Choose your mapped data file",
-                          choices = list.files("Results/",pattern = "mapped\\.csv") %>% str_subset("preview",negate = TRUE) )
+                          choices = c("",list.files("Results/",pattern = "mapped\\.csv") %>%
+                                        str_subset("preview",negate = TRUE)),
+                          selected = "")
     })
     
     dat_file_for_cleaning <- reactive({
