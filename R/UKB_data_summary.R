@@ -10,7 +10,7 @@ data_summary_UI <- function(id) {
                                        str_subset("preview",negate = TRUE)),
                          selected = "",width = "100%")),
       column(6, align = "left",
-             fileInput(NS(id,"up_file"),"Upload your extracted data after code mapping file",width = "100%")),
+             fileInput(NS(id,"up_file"),"Upload your extracted data after code mapping",width = "100%")),
     ),
     
     waiter::use_waiter(),

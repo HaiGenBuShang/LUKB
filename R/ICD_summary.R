@@ -12,7 +12,7 @@ ICD_summary_UI <- function(id) {
                                        str_subset("preview",negate = TRUE)),
                          selected = "",width = "100%")),
       column(6, align = "left",
-             fileInput(NS(id,"up_file"),"Upload your extracted data after code mapping file",width = "100%")),
+             fileInput(NS(id,"up_file"),"Upload your extracted data after code mapping",width = "100%")),
     ),
     tagList(
       waiter::use_waiter(),
@@ -149,7 +149,7 @@ ICD_summary_Server <- function(id,success_info) {
       
       req(input$n_codes)
       dis_long_tab() %>% 
-        mutate(n_codes=str_sub(value,1,input$n_codes)) %>% count(n_codes) %>% 
+        mutate(n_codes=str_sub(value,1,input$n_codes)) %>% distinct(eid,n_codes) %>% count(n_codes) %>% #the number of cases correction
         rename(ICD_codes=1) %>% 
         arrange(ifelse(input$decreasing=="Decreasing",-1,1)*n)
     })
