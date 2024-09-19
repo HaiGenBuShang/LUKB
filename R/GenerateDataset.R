@@ -1,9 +1,9 @@
 modal_confirm <- function(session){
   ns <- session$ns
   modalDialog(
-    HTML("You can only generate one dataset one time,<br>which means you have to generate dataset one by one.<br>
+    HTML("You can only run one data extraction task one time,<br>which means you have to generate dataset one by one.<br>
          Please double check your fields."),
-    title = "Generate dataset",
+    title = "Extract data",
     footer = tagList(
       actionButton(ns("cancel"), "Go back to double check"),
       actionButton(ns("ok"), "I want to continue", class = "btn btn-danger"),

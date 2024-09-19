@@ -110,7 +110,7 @@ ICD_summary_Server <- function(id,success_info) {
     
     ICD_codes_length <- eventReactive(file_pass(),{
       tagList(
-        sliderInput(ns("n_codes"),"Select ICD Code Length",min = 1,max = 5,value = 1),
+        sliderInput(ns("n_codes"),"Select ICD-10 Code Length",min = 1,max = 5,value = 1),
         selectInput(ns("decreasing"),"Table order",choices = c("Decreasing","Increasing"),multiple = FALSE),
         actionButton(ns("counting"),"Count"),
       )

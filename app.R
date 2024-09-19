@@ -42,7 +42,7 @@ ui <- fluidPage(
              DataCleaningUI("Datacleaning")),
     tabPanel("Data Summary",
              data_summary_UI("Data_summary")),
-    tabPanel("ICD Data Summary",
+    tabPanel("ICD Data-10 Summary",
              ICD_summary_UI("ICD_summary")),
     tabPanel("Add Dataset",
              UKB_data_addUI("Add_basket")),
