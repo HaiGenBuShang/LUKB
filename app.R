@@ -56,7 +56,7 @@ ui <- secure_app(
 )
 
 server <- function(input, output, session) {
-  auth_res <- secure_server(check_credentials = check_credentials(credentials),timeout = 30,keep_token = TRUE)
+  auth_res <- secure_server(check_credentials = check_credentials_LUKB(credentials),timeout = 30,keep_token = TRUE)
   
   basket_success <- UKB_data_addServer("Add_basket",authorised_user = authorised_user,auth_res = auth_res)
   

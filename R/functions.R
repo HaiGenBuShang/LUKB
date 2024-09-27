@@ -300,3 +300,30 @@ LUKB_ukb_icd_freq_by <- function (data, reference.var, n.groups = 10,
   
 }
 
+
+
+
+check_credentials_LUKB <- function(credentials){
+  function(user,password){
+    # print(paste0("user is: ",user))
+    # print(paste0("password is: ",password))
+    if (!user %in% credentials$user) {
+      return(list(result = FALSE, expired = FALSE, authorized = FALSE, 
+                  user_info = NULL))
+    } else {
+      user_information <- credentials[credentials$user==user,]
+      if(sodium::password_verify(hash = user_information$password,password)){
+        return(list(result = TRUE, expired = FALSE, authorized = TRUE, 
+                    user_info = user_information[,"user",drop=FALSE]))
+      } else {
+        return(list(result = FALSE, expired = FALSE, authorized = TRUE, 
+                    user_info = user_information[,"user",drop=FALSE]))
+      }
+    }
+    
+  }
+}
+
+
+
+
