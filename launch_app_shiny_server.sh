@@ -9,8 +9,9 @@ sed -i "s/run_as.*/run_as\ $USER;/g" shiny_server_conf/shiny-server.conf #Use cu
 mkdir -p shiny_app
 cd shiny_app
 
+rm -f ./LUKB
 current_dir=$(pwd)
-ln -sf ${current_dir%/*} ./LUKB
+ln -s ${current_dir%/*} ./LUKB
 cd ..
 
 rm -f Running_logs/LUKB-*-*log
