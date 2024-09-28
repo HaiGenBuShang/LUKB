@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 echo "01 01 * * * cd $(pwd)/Results && find . -name \"*\" -mtime +1 -type f -exec rm -rf {} \;" > remove_file.crontab
 

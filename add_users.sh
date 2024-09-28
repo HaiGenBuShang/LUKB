@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir ../UKB_accounts -p
 
 if [ ! -f ../UKB_accounts/accounts ]; then
