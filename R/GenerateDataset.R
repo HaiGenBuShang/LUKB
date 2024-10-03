@@ -68,7 +68,7 @@ GenerateDatasetServer <- function(id,field_data,ukb_basket_file,auth_info) {
     })
     
     observeEvent(Dataset_file(),{
-      system(paste0("echo '",Dataset_file(),"' > ","Results/",user(),"_extraction_file_info.log"))
+      system(paste0("echo '",Dataset_file() %>% str_replace_all("'","'\\'"),"' > ","Results/",user(),"_extraction_file_info.log"))
     })
     
     
