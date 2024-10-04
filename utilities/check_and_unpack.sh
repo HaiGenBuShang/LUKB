@@ -12,6 +12,7 @@ file_md5=$(grep "MD5" .md5sum_res.txt | cut -d '=' -f 3)
 
 if [ "${file_md5}" == "${md5}" ]; then
 	#sleep 5m
+	echo "Data import Started at $(date +"%Y-%m-%d %H:%M:%S")."
 	${dir}/ukbunpack ${data_file} ${key_file} 2>&1 | tee ${data_file}_unpack.log
 	grep 'uncompression failed' ${data_file}_unpack.log > /dev/null
 	if [ "$?" == 0 ]; then
@@ -22,6 +23,7 @@ if [ "${file_md5}" == "${md5}" ]; then
 		head -n 100 ${data_file}_ukb > UKB_data/preview/${data_file##*/}_ukb_preview
 		${dir}/ukbconv ${data_file}_ukb docs
 		zip -uj ./UKB_data/ukb_coding.zip ${data_file%.*}.html
+		echo "Data import finished at $(date +"%Y-%m-%d %H:%M:%S")."
 		echo "Check and unpack finished!"
 	fi
 else
