@@ -16,6 +16,9 @@ cd ..
 
 rm -f Running_logs/LUKB-*-*log
 
+sed -i '$d' app.R
+echo "shinyApp(ui, server)" >> app.R
+
 nohup shiny-server shiny_server_conf/shiny-server.conf > Running_logs/LUKB_shiny_server.log 2>&1 & #run app through shiny-server
 echo $! > Running_logs/LUKB_shiny_server_pid.txt
 

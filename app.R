@@ -42,7 +42,7 @@ ui <- fluidPage(
              DataCleaningUI("Datacleaning")),
     tabPanel("Data Summary",
              data_summary_UI("Data_summary")),
-    tabPanel("ICD Data-10 Summary",
+    tabPanel("ICD-10 Data Summary",
              ICD_summary_UI("ICD_summary")),
     tabPanel("Add Dataset",
              UKB_data_addUI("Add_basket")),
@@ -82,4 +82,5 @@ server <- function(input, output, session) {
 
 
 
-shinyApp(ui, server,options = list(host = "0.0.0.0",port = 1111))
+#shinyApp(ui, server,options = list(host = "0.0.0.0",port = 1111))
+shinyApp(ui, server)
