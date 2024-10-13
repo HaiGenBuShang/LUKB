@@ -1,5 +1,5 @@
 # LUKB
-LUKB is a freely deployable R Shiny-based web tool, which empowers researchers to overcome these hurdles and maximize the potential of UK Biobank data.
+LUKB is a freely deployable R Shiny-based web tool, which empowers researchers to prepare UK Biobank data efficiently, and thus maximizing the potential of UK Biobank data.
 
 First of all, we thank all the authors who contributed to the R shiny or related packages.
 
@@ -25,7 +25,7 @@ Then you can play with the tool by opening the link: http://fill.your.ip.address
 If you want to change the default port 1111, change "port = 1111" to "port = the_port_you_want" in the app.R file.
 
 If you like this tool, please cite:
-Xiangnan Li, Shuming Wang, Hui Zhang and Zixin Hu. LUKB: Preparing Local UK Biobank Data for Analysis. https://github.com/HaiGenBuShang/LUKB
+Xiangnan Li, Shuming Wang, Yi Li, Hui Zhang and Zixin Hu. LUKB: Preparing Local UK Biobank Data for Analysis. https://github.com/HaiGenBuShang/LUKB
 
 If you have any questions, please contact:
 xiangnan_li@fudan.edu.cn
