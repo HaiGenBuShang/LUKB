@@ -51,7 +51,7 @@ sudo nginx -t && systemctl restart nginx.service
 You can start the tool, execute: chmod +x add_users.sh && ./add_users.sh
 You wiil need to add one user name, password and his data downloading permision.
 
-With Nginx and Shiny Server installed and configured correctly, ensure that the port used by Shiny Sever is allowed through your firewall. To allow access to the default Shiny Server port (3838) on Ubuntu, execute the fellowing:
+If using Nginx and Shiny Server, ensure that the port used by Shiny Sever is allowed through the firewall. To allow access to the default Shiny Server port (3838) on Ubuntu, executing the following:
 
 sudo iptables -I INPUT -p tcp --dport 3838 -j ACCEPT (Ubuntu)
 
@@ -65,8 +65,7 @@ or
 
 sudo firewall-cmd --add-port=1111/tcp (CentOS)
 
-Then you can play with the tool by opening the link: http://fill.your.ip.address:1111 with the added user information.
-If you want to change the default port 1111, change "port = 1111" to "port = the_port_you_want" in the app.R file.
+Then port 1111 will be opened temporarily. Then researchers can access LUKB via http://your_server_ip:1111/. To change the default port, change “port = 1111” to “port = the_port_you_want” on line 10 of launch_app.sh file.
 
 If you like this tool, please cite:
 
