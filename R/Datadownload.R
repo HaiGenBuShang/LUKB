@@ -39,7 +39,7 @@ DatadownloadServer <- function(id,auth_user,auth_info,success_info) {
     output$downloaded_file <- renderText({
       paste0("Download file: ",file_to_be_downloaded() %>% str_remove("Results/")) 
     })
-    
+
     sharing_info <- Data_shareServer("data_sharing",shared_file = file_to_be_downloaded)
     output$download <- download_file(file_name = file_to_be_downloaded,user = user,authorised_user = auth_user)
     sharing_info

@@ -5,7 +5,7 @@ Code_remappingUI <- function(id) {
     tags$div("Still some fields not mapping? See UKB ", 
              tags$a(href="https://biobank.ndph.ox.ac.uk/showcase/help.cgi?cd=data_coding","Data Coding section"),
              "and find your corresponding coding file in this ",
-             downloadLink(NS(id,"coding_file"),"HTML file."),
+             downloadLink(NS(id,"existed_coding_file"),"HTML file."),
     ),
     "Provide coding file and filed ID below.",
     tags$div("coding file examples:",
@@ -123,7 +123,7 @@ Code_remappingServer <- function(id,remapping_file) {
       remapped_filename()
     })
     
-    output$coding_file <- downloadHandler(
+    output$existed_coding_file <- downloadHandler(
       filename = function(){
         html_file %>% str_remove_all(".*/")
       },
