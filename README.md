@@ -6,6 +6,10 @@ First of all, we thank all the authors who contributed to the R shiny or related
 
 This tool is used to prepare your local UK Biobank data to analysis-ready status.
 
+## Current status
+
+Now, new analyzing functions for UK Biobank data are being developed, please keep an eye on this tool if you are interested.
+
 ## Dependencies
 
 This tool requires R, best with version 4.2.3 or higher and some dependent R packages.
