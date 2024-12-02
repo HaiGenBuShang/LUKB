@@ -42,7 +42,7 @@ If you want to run LUKB in ***https*** mode, which we **strongly** recommend, es
 
 Firstly, you should modify the configuration file nginx_conf/shiny_server.conf.
 
-You should replace the IP address with your IP address or domain on line 3 and 12 of the file. If you would like Shiny Server run in a different port, replace the port 3838 to the port you like.
+You should replace the IP address with your IP address or domain on line 3 and 14 of the file. If you would like Shiny Server run in a different port, replace the port 3838 to the port you like.
 
 After this, you need to copy the nginx_conf/shiny_server.conf to the directory that contain the configuration files for Nginx. The default directory is /etc/nginx/sites-enabled/ (Ubuntu) and /etc/nginx/conf.d/ (CentOS).
 
