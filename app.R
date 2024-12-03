@@ -48,6 +48,10 @@ ui <- fluidPage(
              UKB_data_addUI("Add_basket")),
     tabPanel("Shared Data",
              View_shared_filesUI("Shared_data")),
+    tabPanel("Antigenic Analysis",
+             Antigenic_mapUI("antigenic_analysis")),
+    tabPanel("Disease Trajectory Analysis",
+             Disease_trajectoryUI("disease_trajectory"))
   ),
 )
 
@@ -77,6 +81,13 @@ server <- function(input, output, session) {
   View_shared_filesServer("Shared_data",auth_info = auth_res,authorised_user = authorised_user,
                           sharing_success_info = sharing_info
   )
+  
+  Antigenic_mapServer("antigenic_analysis")
+  
+  user <- reactive({
+    reactiveValuesToList(auth_res)$user 
+  })
+  Disease_trajectoryServer("disease_trajectory",user = user,authorised_user = authorised_user)
   
 }
 

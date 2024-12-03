@@ -326,4 +326,97 @@ check_credentials_LUKB <- function(credentials){
 
 
 
+library(tidyverse)
+library(Racmacs)
+library(ggrepel)
 
+rotate_Matrix <- function(angle){
+  radian_angle <- angle*2/360*pi
+  #define the rotation matrix
+  matrix( c(cos(radian_angle), -sin(radian_angle), sin(radian_angle), cos(radian_angle)), 2, 2 )
+}
+
+antigenic_lineage_coor <- function(ID50_dat,lineage_colors){
+  
+  options(RacOptimizer.num_cores = parallel::detectCores()-4)
+  colors <- lineage_colors
+  
+  # colors <- c("black","blue","red","orange","green","#ff00ff")
+  a <- ID50_dat %>% as_tibble() %>% rename(lineage=1)
+  
+  
+  
+  b <- data.matrix(a[,-1])
+  rownames(b) <- a$lineage
+  
+  b <- apply(b,2,function(x){
+    x <- ifelse(is.na(x),40,x)
+    ifelse(x<=10,"<10",x)
+  })
+  
+  map <- acmap(titer_table = b)
+  
+  set.seed(12345678)
+  map1 <- optimizeMap(
+    map                     = map,
+    number_of_dimensions    = 2,
+    number_of_optimizations = 10000,
+    minimum_column_basis    = "none",
+    verbose = FALSE
+  )
+  xx <- Racmacs:::mapPoints(map = map1,optimization_number = 1)$coords
+  
+  points_coor <- xx %>% as.data.frame() %>%  rownames_to_column("Var") %>% rename(x_axis=V1,y_axis=V2) %>% 
+    mutate(type=rep(c("lineage","serum_indivivual"),times=c(nrow(a),ncol(a)-1)))
+  list(points_coor=points_coor,xx=xx,colors=colors)
+}
+
+antigenic_rotate <- function(lineage_coor_obj,title,rotate_angle,x_lim,y_lim,point_size,lab_size){
+  points_coor <- lineage_coor_obj$points_coor
+  xx <- lineage_coor_obj$xx
+  colors <- lineage_coor_obj$colors
+  
+  rotate_M <- rotate_Matrix(angle = rotate_angle)
+  
+  rotated_points <- xx %*% rotate_M %>% as.data.frame() %>% 
+    rename(x=V1,y=V2)
+  
+  dat <- points_coor %>% mutate(pch=ifelse(type=="lineage",1,0)) %>% 
+    mutate(color=c(colors,
+                   rep("#A65628",length(points_coor$type)-length(colors)))) %>% cbind(rotated_points)
+  
+  dat <- dat %>% mutate(ori_x_axis=x_axis,ori_y_axis=y_axis,x_axis=x,y_axis=y) %>% 
+    mutate(Var=Var %>% str_trim(side = "both"))
+  
+  
+  g_plots <- ggplot() +
+    geom_point(mapping = aes(x=x_axis,y=y_axis,colour=color),
+               alpha=0.5,shape=0,size=point_size,
+               data = dat %>% filter(type!='lineage')) +
+    geom_point(mapping = aes(x=x_axis,y=y_axis,fill=color),
+               alpha=0.8,shape=21,color="black",size=point_size,
+               data = dat %>% filter(type=='lineage')) + scale_fill_identity(guide = "legend") +
+    geom_text_repel(aes(x=x_axis,y=y_axis,label=Var),
+                    data=dat %>% filter(type=='lineage'),
+                    size=lab_size,segment.color="black",min.segment.length = 1) +
+    scale_y_continuous(breaks=scales::breaks_width(1),limits = y_lim) +
+    scale_x_continuous(breaks=scales::breaks_width(1),limits = x_lim) +
+    theme_bw() + theme(panel.grid=element_blank()) +
+    theme(legend.position='none',
+          text = element_blank(),
+          panel.grid.major.y = element_line(color = "grey",linewidth = 0.25,linetype = 1),
+          panel.grid.major.x = element_line(color = "grey",linewidth = 0.25,linetype = 1),
+    ) + coord_fixed()+ggtitle(title)
+  
+  return(g_plots)
+}
+
+
+antigenic_distance <- function(lineage_coor_obj){
+  dat <- lineage_coor_obj$points_coor %>% filter(type=="lineage") %>% column_to_rownames("Var") %>% select(-type)
+  apply(dat,1,function(x){
+    apply(dat,1,function(y){
+      ((x[1]-y[1])^2+(x[2]-y[2])^2)^(1/2)
+    })
+  }) %>% as.data.frame() %>% rownames_to_column("lineage")
+}
