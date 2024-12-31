@@ -3,6 +3,9 @@ args <- commandArgs(trailingOnly = TRUE)
 file_prefix <- args[[1]]
 disease_pairs_file <- args[[2]]
 
+s_time <- Sys.time()
+cat("Started at",format(s_time, "%Y_%m_%d_%H%M%S"),"\n")
+
 library(tidyverse)
 library(lubridate)
 source("R/functions_for_disease_network.R")
@@ -30,5 +33,10 @@ save(c_log_res,file = disease_pairs_file %>% str_replace_all("\\.RData","_clog_r
 analysis_part <- disease_pairs_file %>% str_replace_all(".*(part[0-9]*).*","\\1")
 
 # cat(file_for_ccwc %>% str_replace_all(".*(part[0-9]*).*","\\1"),"finished!")
+
+e_time <- Sys.time()
+cat("Ended at",format(e_time, "%Y_%m_%d_%H%M%S"),"\n")
+
+cat("Costed",format((e_time-s_time) %>% as.difftime(units="mins")),"\n")
 
 cat("CCWC analysis",analysis_part,"finished!")

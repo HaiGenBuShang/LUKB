@@ -9,7 +9,9 @@ number_of_core <- as.integer(args[[2]])
 dat_file <- paste0("Results/",file_prefix,"_input_data.RData")
 parameter_file <- paste0("Results/",file_prefix,"_parameters.RData")
 
-
+# option(warn=-1)
+# invisible(file.remove(list.files(path = "Results/",pattern = paste0(file_prefix,"_HR_disease_part.*RData"))))
+# options(warn=0)
 
 load(dat_file);load(parameter_file)
 

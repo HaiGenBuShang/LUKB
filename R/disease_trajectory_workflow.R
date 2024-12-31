@@ -17,6 +17,8 @@ Disease_trajectoryUI <- function(id) {
     
     uiOutput(NS(id,"ccwc")),
     
+    uiOutput(NS(id,"final_tra")),
+    
   )
 }
 
@@ -84,8 +86,28 @@ Disease_trajectoryServer <- function(id,user,authorised_user) {
       ccwc_ui()
     })
 
-    disease_trajectory_case_control_analysis_Server("ccwc_workflow",last_step_success = direction_tes_res_graph,
-                                                    user = user,authorised_user = authorised_user)
+    ccwc_res_graph <- disease_trajectory_case_control_analysis_Server("ccwc_workflow",last_step_success = direction_tes_res_graph,
+                                                                      user = user,authorised_user = authorised_user)
+    
+    
+    #***********************************************************
+    #*Final disease trajectories started from the target disease
+    #***********************************************************
+    
+    fina_tra_ui <- eventReactive(ccwc_res_graph(),{
+      tagList(
+        hr(),
+        disease_trajectory_final_trajectory_UI(ns("final_tra_workflow"))
+      )
+    })
+    
+    output$final_tra <- renderUI({
+      fina_tra_ui()
+    })
+    
+    disease_trajectory_final_trajectory_Server("final_tra_workflow",last_step_success = ccwc_res_graph,
+                                               user = user,authorised_user = authorised_user)
+    
     
   })
 }

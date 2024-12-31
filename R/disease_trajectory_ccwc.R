@@ -4,12 +4,12 @@ disease_trajectory_case_control_analysis_UI <- function(id) {
       sidebarPanel(
         textInput(NS(id,"ccwc_prefix"),label = "Please provide the file prefix of your task",
                   placeholder = "yyy_mm_dd_abcdefghij"),
-        numericInput(NS(id,"ccwc_number_for_HR"),label = paste0("How many cores used for cox analysis ",
+        numericInput(NS(id,"ccwc_number_for_HR"),label = paste0("How many cores used for c-logistic regression ",
                                                                 "(Much memory required for each core)"),
                      value = 2,min = 1),
         
         waiter::use_waiter(),
-        actionButton(NS(id,"ccwc_start"),"Start matching and Clogistic"),
+        actionButton(NS(id,"ccwc_start"),"Start matching and clogistic"),
         
         verbatimTextOutput(NS(id,"ccwc_start_info")),
         hr(),
@@ -83,7 +83,21 @@ disease_trajectory_case_control_analysis_Server <- function(id,last_step_success
     
     output$ccwc_graph <- renderPlot({
       req(ccwc_g())
-      igraph::plot.igraph(ccwc_g(),edge.lty=1.5,edge.arrow.size=0.3)
+      # igraph::plot.igraph(ccwc_g(),edge.lty=1.5,edge.arrow.size=0.3)
+      set.seed(12345678)
+      igraph::plot.igraph(ccwc_g(),
+                          layout=igraph::layout_with_fr,
+                          edge.arrow.size=0.3, 
+                          vertex.label.cex=0.75, 
+                          vertex.label.family="Helvetica",
+                          vertex.label.font=2,
+                          vertex.shape="circle", 
+                          # vertex.size=1, 
+                          vertex.size=0, 
+                          vertex.label.color="black", 
+                          edge.width=0.5,
+                          edge.lty=1.5)
+      
     },res = 144)
     
     

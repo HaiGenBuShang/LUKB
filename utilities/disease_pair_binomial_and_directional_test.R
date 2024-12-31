@@ -4,6 +4,9 @@ args <- commandArgs(trailingOnly = TRUE)
 
 file_prefix <- args[[1]]
 
+s_time <- Sys.time()
+cat("Started at",format(s_time, "%Y_%m_%d_%H%M%S"),"\n")
+
 library(tidyverse)
 library(lubridate)
 library(igraph)
@@ -31,7 +34,10 @@ binomial_res <- di_traj_binomial(disease_records = dat_for_HR,target_disease = t
 
 #Here we only included diseases that the probability of binomial distribution and p-value of binomial test are significant,
 #and the probability of getting disease B after disease A is larger than probability of only getting disease B
-disease_pair_to_exam <- binomial_res %>% filter(pr_A_to_B_adj<0.05,p_val_A_to_B_adj<0.05) %>% filter(uplift>1)
+# disease_pair_to_exam <- binomial_res %>% filter(pr_A_to_B_adj<0.05,p_val_A_to_B_adj<0.05) %>% filter(uplift>1)
+
+#Here we only included diseases that the probability of binomial distribution and p-value of binomial test are significant
+disease_pair_to_exam <- binomial_res %>% filter(p_val_A_to_B_adj<0.05) %>% filter(uplift>1)
 
 
 #Here we do direction,
@@ -47,6 +53,11 @@ g <- graph_from_data_frame(d_pair_passed_direction %>% select(disease_A,disease_
 
 save(d_pair_passed_direction,file = paste0("Results/",file_prefix,"_disease_pair_test_pairs.RData"))
 save(g,file = paste0("Results/",file_prefix,"_disease_pair_test_graph.RData"))
+
+e_time <- Sys.time()
+cat("Ended at",format(e_time, "%Y_%m_%d_%H%M%S"),"\n")
+
+cat("Costed",format((e_time-s_time) %>% as.difftime(units="mins")),"\n")
 
 cat("Disease pair analysis finished!")
 

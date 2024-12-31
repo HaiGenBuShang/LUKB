@@ -352,7 +352,7 @@ prepare_cox_data <- function(disease_records,target_disease,include_disease=NULL
                              start_date,end_date=max(as_date(disease_records %>% pull(3))),
                              min_prevalence_to_include_disease=0.01,
                              min_two_disease_gap=0,
-                             variable_included_for_cox_data=NULL){
+                             variable_included_for_cox_data=NULL,for_cwcc=FALSE){
   message("Note: the first three columns should contain individual IDs, disease codes, and date of getting diseases!")
   
   data <- disease_records %>% rename(eid=1,pid=2,value=3)%>% mutate(value=as_date(value)) %>% as_tibble()
@@ -377,7 +377,7 @@ prepare_cox_data <- function(disease_records,target_disease,include_disease=NULL
   
   #data for those have any diseases after the start_date
   #this data is used for produce the included people
-  included_pop <- data_1 %>% filter(value>=start_date) %>% distinct(eid)
+  included_pop <- data_1 %>% filter(value>=start_date,value<=end_date) %>% distinct(eid)
   
   #date info of people have target disease and its corresponding date
   target_disease_pop_info <- data_1 %>% filter(d_state==1) %>% select(eid,d_state,d_date,start_date,end_date) %>% 
@@ -400,21 +400,35 @@ prepare_cox_data <- function(disease_records,target_disease,include_disease=NULL
   cox_res <- data_3 %>% lapply(function(x){
     
     #include those have diseases before specific disease occurs
+    # tmp_1 <- included_pop %>% 
+    #   #to exclude people that have disease before specific disease occurss
+    #   anti_join(x %>% filter(d_to_disease<0|(!d_date_between_start_and_end)),by="eid") %>% 
+    #   #to exclude people that have specific diseases before the start date or after the end date
+    #   anti_join(target_disease_pop_info %>% filter(!d_date_between_start_and_end),by="eid") %>% 
+    #   # left_join(x,by="eid") %>% filter(value>start_date|is.na(d_date)) %>% 
+    #   
+    #   
+    #   left_join(x %>% select(-any_of(variable_included_for_cox_data)),by="eid") %>% 
+    #   filter(value>start_date|is.na(d_date)) %>%
+    #   # mutate(pid_for_match=unique(pid) %>% na.omit()) %>%
+    #   left_join(data %>% select(eid,any_of(variable_included_for_cox_data)) %>% distinct(),by="eid")
+    
     tmp_1 <- included_pop %>% 
-      #to exclude people that have disease before specific disease occurss
-      anti_join(x %>% filter(d_to_disease<0|(!d_date_between_start_and_end)),by="eid") %>% 
+      
       #to exclude people that have specific diseases before the start date or after the end date
       anti_join(target_disease_pop_info %>% filter(!d_date_between_start_and_end),by="eid") %>% 
       # left_join(x,by="eid") %>% filter(value>start_date|is.na(d_date)) %>% 
       
-      
       left_join(x %>% select(-any_of(variable_included_for_cox_data)),by="eid") %>% 
-      filter(value>start_date|is.na(d_date)) %>%
+      
+      #to exclude people that got the diseases before start date 
+      #did not consider the order of disease and specific disease occurring
+      filter(value>=start_date|is.na(pid)) %>%
       # mutate(pid_for_match=unique(pid) %>% na.omit()) %>%
       left_join(data %>% select(eid,any_of(variable_included_for_cox_data)) %>% distinct(),by="eid")
     
     
-    if(tmp_1 %>% filter(!is.na(pid)) %>% nrow() / tmp_1 %>% nrow > min_prevalence_to_include_disease){
+    if((tmp_1 %>% filter(!is.na(pid)) %>% nrow() / tmp_1 %>% nrow > min_prevalence_to_include_disease)|(for_cwcc)){
       cox_dat_1 <- tmp_1 %>% mutate(d_1_status=if_else(is.na(pid),0,1)) %>% mutate(pid=unique(pid) %>% na.omit()) %>% 
         select(eid,pid,d_1_status,d_1_date=value,any_of(variable_included_for_cox_data)) %>% 
         left_join(target_disease_pop_info %>% select(eid,d_state,d_date),by="eid") %>% 
@@ -424,7 +438,9 @@ prepare_cox_data <- function(disease_records,target_disease,include_disease=NULL
         mutate(d_to_d_1_days=if_else(is.na(d_1_date)&(!is.na(d_date)),end_date-d_date,d_to_d_1_days)) %>% 
         mutate(d_to_d_1_days=if_else((!is.na(d_1_date))&is.na(d_date),d_1_date-start_date,d_to_d_1_days)) %>% 
         mutate(d_to_d_1_days=if_else((!is.na(d_1_date))&(!is.na(d_date)),d_1_date-d_date,d_to_d_1_days)) %>% 
-        filter(d_to_d_1_days>=min_two_disease_gap) %>% 
+        
+        # filter(d_to_d_1_days>=min_two_disease_gap) %>% 
+        
         #add one column that how many days from the start date to the status date
         mutate(start_to_d_1_days=if_else(is.na(d_1_date),end_date-start_date,d_1_date-start_date))
       
@@ -559,6 +575,9 @@ di_traj_binomial <- function(disease_records,target_disease,cox_passed_disease,
     #filter out diseases occurred before start and after end date
     filter(date_A>=start_date) %>% filter(date_A<=end_date,date_B<=end_date)
   
+  #count for each disease
+  d_count <- data_1 %>% distinct(eid,disease_A) %>% count(disease_A)
+  
   #count individuals with disease B occurring before disease A and disease B occurring after disease A too close
   n_B_before_A <- data_1 %>% group_by(disease_A,disease_B) %>% summarise(n=sum(gap_A_to_B<max(0,min_two_disease_gap)))
   
@@ -571,8 +590,8 @@ di_traj_binomial <- function(disease_records,target_disease,cox_passed_disease,
     #filter out disease pairs that occurred too close
     filter(gap_A_to_B>=min_two_disease_gap)
   
-  #count for each disease
-  d_count <- data_1 %>% distinct(eid,disease_A) %>% count(disease_A)
+  # #count for each disease
+  # d_count <- data_1 %>% distinct(eid,disease_A) %>% count(disease_A)
   
   #produce the data for binomial test
   data_2 <- d_count %>% rename(nA=n) %>% 
@@ -688,7 +707,7 @@ di_traj_cc_dataset <- function(disease_pair_dat,disease_records,start_date="2020
                      start_date = start_date,end_date = end_date,
                      min_prevalence_to_include_disease = min_prevalence_to_include_disease,
                      min_two_disease_gap = min_two_disease_gap,
-                     variable_included_for_cox_data=variable_included_for_cox_data)
+                     variable_included_for_cox_data=variable_included_for_cox_data,for_cwcc = TRUE)
   ))) %>% unnest(cols = c(data,prepared_dat))
   
   match_call <- as.call(c(list(as.name("list")), variable_included_for_cox_data %>% lapply(as.name)))
@@ -1103,5 +1122,67 @@ download_RData <- function(file_name,user,authorised_user){
 
 
 
+target_disease_number <- function(dat,target_disease,start_date,end_date){
+  dat %>% filter(pid==target_disease) %>% group_by(value) %>% summarise(n=n()) %>% 
+    ggplot()+
+    geom_col(mapping = aes(x=value,y=n)) + geom_vline(xintercept = as_date(c(start_date,end_date)),linetype=2,color="red") +
+    xlab("Date")+ylab("Individual Number") + 
+    ggtitle("Target Disease Cases")+
+    # labs(title = "**Target Disease Cases**")+
+    theme(axis.text = element_text(size=10),axis.title = element_text(size=10),
+          plot.title=element_text(hjust = 0.5,size=10,face = "bold"))
+          # plot.title=ggtext::element_markdown(hjust = 0.5,size=10,face = "bold"))
+}
 
+
+
+include_disease <- function(dat,min_prevalence){
+  total_n <- dat %>% distinct(eid) %>% nrow
+  dat %>% group_by(pid) %>% summarise(disease_n=n()) %>% mutate(total_n=total_n) %>% mutate(prevalence=disease_n/total_n) %>% 
+    mutate(type=if_else(prevalence>=min_prevalence,"Included","Excluded")) %>% 
+    ggplot() +
+    geom_bar(mapping = aes(x=fct_infreq(type) %>% fct_relevel("Excluded",after = Inf)),width = 0.5) + 
+    xlab("Diseases")+ylab("Disease Number")+
+    ggtitle("Included and Excluded Disease Numbers")+
+    # labs(title = "**Included and Excluded Disease Numbers**")+
+    theme(axis.text = element_text(size=10),axis.title = element_text(size=10),
+          plot.title=element_text(hjust = 0.5,size=10,face = "bold"))
+}
+
+
+individual_disease_counted <- function(dat,start_date,end_date,min_disease_gap,target_disease){
+  # disease_per_ind <- dat %>% distinct(eid) %>% #head(10) %>% 
+  #   left_join(dat %>% filter(value>=start_date,value<=end_date) %>% 
+  #               #filter(eid%in%c(1000077,1001647,1003685)) %>% 
+  #               mutate(d_date=if_else(pid==target_disease,value,NA)) %>% 
+  #               group_by(eid) %>% fill(d_date,.direction = "downup") %>% ungroup() %>% 
+  #               mutate(days_to_next_disease=value-d_date) %>% filter(days_to_next_disease>min_disease_gap) %>% count(eid),
+  #             by="eid") %>% mutate(n=replace_na(n,0))
+  disease_per_ind <- dat %>% filter(value>=start_date,value<=end_date) %>% count(eid)
+  library(scales)
+  disease_per_ind %>% count(n,name = "num") %>% 
+    ggplot() +
+    geom_col(mapping = aes(x=n,y=num)) + 
+    scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                  labels = trans_format("log10", math_format(10^.x))) +
+    xlab("Number of Diseases per Individual") + ylab("Individual Number")+
+    ggtitle("Number of Individuals with Different Numbers of Diseases")+
+    theme(axis.text.x = element_text(size=10),
+          axis.text.y = element_text(size=5),
+          axis.title = element_text(size=10),
+          plot.title=element_text(hjust = 0.5,size=10,face = "bold"))
+}
+
+
+case_control_num <- function(dat,target_disease,start_date,end_date,n_controls){
+  cases <- dat %>% filter(pid==target_disease) %>% filter(value>=start_date,value<=end_date) %>% nrow()
+  controls <- cases*n_controls
+  rbind(cases,controls) %>% as.data.frame() %>% rownames_to_column("type") %>% rename(number=2) %>% 
+    ggplot() +
+    geom_col(mapping = aes(x=type,y=number),width=0.5) +
+    xlab("Type") + ylab("Individual Number") +
+    ggtitle("Number of Cases and Controls for Case-Control Analysis")+
+    theme(axis.text = element_text(size=10),axis.title = element_text(size=10),
+          plot.title=element_text(hjust = 0.5,size=10,face = "bold"))
+}
 

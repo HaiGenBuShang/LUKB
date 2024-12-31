@@ -53,7 +53,23 @@ disease_trajectory_disease_pair_direction_Server <- function(id,last_step_succes
     output$direction_test_graph <- renderPlot({
       req(direction_tes_res_graph())
       # browser()
-      igraph::plot.igraph(direction_tes_res_graph(),edge.lty=1.5,edge.arrow.size=0.3)
+      # igraph::plot.igraph(direction_tes_res_graph(),edge.lty=1.5,edge.arrow.size=0.3)
+      
+      set.seed(12345678)
+      igraph::plot.igraph(direction_tes_res_graph(),
+        layout=igraph::layout_with_fr,
+        edge.arrow.size=0.3, 
+        vertex.label.cex=0.75, 
+        vertex.label.family="Helvetica",
+        vertex.label.font=2,
+        vertex.shape="circle", 
+        # vertex.size=1, 
+        vertex.size=0, 
+        vertex.label.color="black", 
+        edge.width=0.5,
+        edge.lty=1.5)
+      
+      
     },res = 144)
     
     
