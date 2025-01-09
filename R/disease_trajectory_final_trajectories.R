@@ -10,7 +10,7 @@ disease_trajectory_final_trajectory_UI <- function(id) {
       ),
       mainPanel(
         uiOutput(NS(id,"final_tra_show_parameter")),
-        plotOutput(NS(id,"final_tra_graph"),height = "1200px"),
+        visNetworkOutput(NS(id,"final_tra_graph"),height = "800px"),
         
         uiOutput(NS(id,"final_tra_download_ui")),
         
@@ -55,25 +55,22 @@ disease_trajectory_final_trajectory_Server <- function(id,last_step_success,user
       # sub_g
     })
     
-    output$final_tra_graph <- renderPlot({
+    output$final_tra_graph <- renderVisNetwork({
       req(final_tra_res_graph())
       # browser()
       # igraph::plot.igraph(final_tra_res_graph(),edge.lty=1.5,edge.arrow.size=0.3)
       set.seed(12345678)
-      igraph::plot.igraph(final_tra_res_graph(),
-                          layout=igraph::layout_with_fr,
-                          edge.arrow.size=0.35, 
-                          vertex.label.cex=0.75, 
-                          vertex.label.family="Helvetica",
-                          vertex.label.font=2,
-                          vertex.shape="circle", 
-                          # vertex.size=1, 
-                          vertex.size=0, 
-                          vertex.label.color="black", 
-                          edge.width=0.5,
-                          edge.lty=1.5)
+      vis_dat <- toVisNetworkData(final_tra_res_graph())
       
-    },res = 144)
+      load(paste0("Results/",input$final_tra_prefix,"_parameters.RData"))
+      
+      vis_dat$nodes$color <- if_else(vis_dat$nodes$id==t_disease,"red","lightblue")
+      visNetwork(nodes = vis_dat$nodes, edges = vis_dat$edges) %>% visIgraphLayout(layout = "layout_with_fr") %>% 
+        visEdges(arrows = list(to=list(enabled=TRUE,scaleFactor = 0.5)),color="grey") %>% 
+        visNodes(font = list(size=30,face="Arial",color="black",vadjust=-10))
+      
+      
+    })
     
     
     

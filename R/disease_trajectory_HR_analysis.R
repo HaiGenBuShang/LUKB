@@ -12,7 +12,7 @@ disease_trajectory_HR_analysis_UI <- function(id) {
       ),
       mainPanel(
         uiOutput(NS(id,"Cox_show_parameter")),
-        plotOutput(NS(id,"Cox_plot")),
+        plotlyOutput(NS(id,"Cox_plot")),
         
         uiOutput(NS(id,"Cox_download_ui")),
         
@@ -56,13 +56,14 @@ disease_trajectory_HR_analysis_Server <- function(id,user,authorised_user) {
     })
     
     HR_res_plot <- eventReactive(HR_res(),{
-      dat_for_ggplot <- HR_res() %>% select(-contains("CI")) %>% mutate(row_n=row_number()) %>% 
+      dat_for_ggplot <- HR_res() %>% #select(-contains("CI")) %>% 
+        mutate(row_n=row_number()) %>% 
         
         mutate(shape=if_else(HR_p_adj<0.05&p_adj<0.05,19,3),
                
                #if the color were changed, then 
                #!!! scale_color_identity() !!! label parameter must be checked!!!!!
-               color=if_else(HR_p_adj<0.05&p_adj<0.05,"red","black")) %>% 
+               color=if_else(HR_p_adj<0.05&p_adj<0.05,"<0.05","≥0.05")) %>% 
         
         #**********************************************
         #*This line used to produce the chapter initial
@@ -74,18 +75,27 @@ disease_trajectory_HR_analysis_Server <- function(id,user,authorised_user) {
         mutate(mean=map2_dbl(min_row_n,lag,~(mean(c(.x,.y))))) %>% 
         mutate(mean_label=map2_dbl(max_row_n,min_row_n,~mean(c(.x,.y))))
       
+      # browser()
       dat_for_ggplot %>% 
         ggplot() +
-        geom_point(mapping = aes(x=row_n,y=log(HR),color=color)) +
-        scale_color_identity(guide = guide_legend(title = "Adjust P"),labels=c(">0.05","<0.05"))+
+        geom_point(mapping = aes(x=row_n,y=log(HR),color=color,
+                                 text=paste0("ICD-10:&nbsp;",pid,
+                                             "<br>HR:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",round(HR,digits = 2),
+                                             "<br>HR CI:&nbsp;&nbsp;",
+                                             CI_low %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2)," - ",
+                                             CI_upp %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2)))) +
+        # scale_color_identity(guide = guide_legend(title = "Adjust P"),labels=c(">0.05","<0.05"))+
+        scale_color_manual(values = c("≥0.05"="black","<0.05"="red"),name="Adjusted P")+
         geom_hline(yintercept = 0) + geom_vline(xintercept = gg_vline_dat$mean[-1],linetype=2)+
         scale_x_continuous(breaks = gg_vline_dat$mean_label,labels = gg_vline_dat$Chapter_initial) + 
-        xlab("ICD-10 Chapter Initials")
+        xlab("ICD-10 Chapter Initials") +
+        theme(#axis.title.x = element_text(face = "bold"),
+          axis.title = element_text(face = "bold",family = "Arial"))
     })
     
-    output$Cox_plot <- renderPlot({
-      HR_res_plot()
-    },res = 144)
+    output$Cox_plot <- renderPlotly({
+      ggplotly(HR_res_plot(),tooltip = c("text"),labelfont=2)
+    })
     
     
     parameter_ui <- eventReactive(HR_task_status(),{
@@ -128,6 +138,7 @@ disease_trajectory_HR_analysis_Server <- function(id,user,authorised_user) {
     module_secuss <- HR_res_plot
   })
 }
+
 
 
 

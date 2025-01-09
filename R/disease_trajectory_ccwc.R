@@ -17,7 +17,7 @@ disease_trajectory_case_control_analysis_UI <- function(id) {
       ),
       mainPanel(
         uiOutput(NS(id,"ccwc_show_parameter")),
-        plotOutput(NS(id,"ccwc_graph"),height = "1200px"),
+        visNetworkOutput(NS(id,"ccwc_graph"),height = "800px"),
         
         uiOutput(NS(id,"ccwc_download_ui")),
         
@@ -81,24 +81,20 @@ disease_trajectory_case_control_analysis_Server <- function(id,last_step_success
                                            select(disease_A,disease_B))
     })
     
-    output$ccwc_graph <- renderPlot({
+    output$ccwc_graph <- renderVisNetwork({
       req(ccwc_g())
       # igraph::plot.igraph(ccwc_g(),edge.lty=1.5,edge.arrow.size=0.3)
       set.seed(12345678)
-      igraph::plot.igraph(ccwc_g(),
-                          layout=igraph::layout_with_fr,
-                          edge.arrow.size=0.3, 
-                          vertex.label.cex=0.75, 
-                          vertex.label.family="Helvetica",
-                          vertex.label.font=2,
-                          vertex.shape="circle", 
-                          # vertex.size=1, 
-                          vertex.size=0, 
-                          vertex.label.color="black", 
-                          edge.width=0.5,
-                          edge.lty=1.5)
+      vis_dat <- toVisNetworkData(ccwc_g())
       
-    },res = 144)
+      load(paste0("Results/",input$ccwc_prefix,"_parameters.RData"))
+      
+      vis_dat$nodes$color <- if_else(vis_dat$nodes$id==t_disease,"red","lightblue")
+      visNetwork(nodes = vis_dat$nodes, edges = vis_dat$edges) %>% visIgraphLayout(layout = "layout_with_fr") %>% 
+        visEdges(arrows = list(to=list(enabled=TRUE,scaleFactor = 0.5)),color="grey") %>% 
+        visNodes(font = list(size=30,face="Arial",color="black",vadjust=-10))
+      
+    })
     
     
     

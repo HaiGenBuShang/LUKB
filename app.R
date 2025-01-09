@@ -5,6 +5,8 @@ library(rvest)
 library(ukbwranglr)
 
 library(shinymanager)
+library(plotly)
+library(visNetwork)
 
 inactivity <- "function idleTimer() {
 var t = setTimeout(logout, 120000);

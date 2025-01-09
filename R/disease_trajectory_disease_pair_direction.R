@@ -11,7 +11,8 @@ disease_trajectory_disease_pair_direction_UI <- function(id) {
       ),
       mainPanel(
         uiOutput(NS(id,"direction_test_show_parameter")),
-        plotOutput(NS(id,"direction_test_graph"),height = "1200px"),
+        # plotlyOutput(NS(id,"direction_test_graph"),height = "800px"),
+        visNetworkOutput(NS(id,"direction_test_graph"),height = "800px"),
         
         uiOutput(NS(id,"direction_test_download_ui")),
         
@@ -50,27 +51,22 @@ disease_trajectory_disease_pair_direction_Server <- function(id,last_step_succes
       g
     })
     
-    output$direction_test_graph <- renderPlot({
+    output$direction_test_graph <- renderVisNetwork({
       req(direction_tes_res_graph())
       # browser()
       # igraph::plot.igraph(direction_tes_res_graph(),edge.lty=1.5,edge.arrow.size=0.3)
       
       set.seed(12345678)
-      igraph::plot.igraph(direction_tes_res_graph(),
-        layout=igraph::layout_with_fr,
-        edge.arrow.size=0.3, 
-        vertex.label.cex=0.75, 
-        vertex.label.family="Helvetica",
-        vertex.label.font=2,
-        vertex.shape="circle", 
-        # vertex.size=1, 
-        vertex.size=0, 
-        vertex.label.color="black", 
-        edge.width=0.5,
-        edge.lty=1.5)
+      vis_dat <- toVisNetworkData(direction_tes_res_graph())
       
+      load(paste0("Results/",input$direction_test_prefix,"_parameters.RData"))
       
-    },res = 144)
+      vis_dat$nodes$color <- if_else(vis_dat$nodes$id==t_disease,"red","lightblue")
+      visNetwork(nodes = vis_dat$nodes, edges = vis_dat$edges) %>% visIgraphLayout(layout = "layout_with_fr") %>% 
+        visEdges(arrows = list(to=list(enabled=TRUE,scaleFactor = 0.5)),color="grey") %>% 
+        visNodes(font = list(size=30,face="Arial",color="black",vadjust=-10))
+      
+    })
     
     
     parameter_ui <- eventReactive(direction_test_status(),{
@@ -114,6 +110,7 @@ disease_trajectory_disease_pair_direction_Server <- function(id,last_step_succes
     module_secuss <- direction_tes_res_graph
   })
 }
+
 
 
 # ui <- fluidPage(
