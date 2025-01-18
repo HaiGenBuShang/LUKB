@@ -80,10 +80,25 @@ disease_trajectory_HR_analysis_Server <- function(id,user,authorised_user) {
         ggplot() +
         geom_point(mapping = aes(x=row_n,y=log(HR),color=color,
                                  text=paste0("ICD-10:&nbsp;",pid,
-                                             "<br>HR:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",round(HR,digits = 2),
-                                             "<br>HR CI:&nbsp;&nbsp;",
+                                             "<br>HR:&nbsp;",round(HR,digits = 2),
+                                             "<br>HR CI:&nbsp;",
                                              CI_low %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2)," - ",
-                                             CI_upp %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2)))) +
+                                             CI_upp %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2))
+                                 
+                                 # text=paste0("ICD-10:&nbsp;",pid,
+                                 #             "<br>HR:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",round(HR,digits = 2),
+                                 #             "<br>HR CI:&nbsp;",
+                                 #             CI_low %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2)," - ",
+                                 #             CI_upp %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2))
+                                 
+                                 # text=paste0("<span style='font-family:monospace'>",
+                                 #             sprintf("%-8s","ICD-10:"),pid,
+                                 #             "<br>",sprintf("%-8s","HR:"),round(HR,digits = 2),
+                                 #             "<br>",sprintf("%-8s","HR CI:"),
+                                 #             CI_low %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2)," - ",
+                                 #             CI_upp %>% as.numeric() %>% round(digits = 2) %>% format(nsmall=2))
+                                 
+                                 )) +
         # scale_color_identity(guide = guide_legend(title = "Adjust P"),labels=c(">0.05","<0.05"))+
         scale_color_manual(values = c("≥0.05"="black","<0.05"="red"),name="Adjusted P")+
         geom_hline(yintercept = 0) + geom_vline(xintercept = gg_vline_dat$mean[-1],linetype=2)+

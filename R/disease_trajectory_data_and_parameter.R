@@ -29,12 +29,12 @@ disease_trajectory_data_and_parameters_UI <- function(id) {
       ),
       mainPanel(
         fluidRow(
-          column(width = 6,plotOutput(NS(id,"target_disease_num"))),
-          column(width = 6,plotOutput(NS(id,"include_diseases"))),
+          column(width = 6,plotlyOutput(NS(id,"target_disease_num"))),
+          column(width = 6,plotlyOutput(NS(id,"include_diseases"))),
         ),
         fluidRow(
-          column(width = 6,plotOutput(NS(id,"disease_per_ind"))),
-          column(width = 6,plotOutput(NS(id,"case_control_num"))),
+          column(width = 6,plotlyOutput(NS(id,"disease_per_ind"))),
+          column(width = 6,plotlyOutput(NS(id,"case_control_num"))),
         )
       )
     )
@@ -126,10 +126,10 @@ disease_trajectory_data_and_parameters_Server <- function(id) {
       
     })
     
-    output$target_disease_num <- renderPlot({
+    output$target_disease_num <- renderPlotly({
       req(data_preview())
-      data_preview()$disease_num
-    },res = 144)
+      ggplotly(data_preview()$disease_num,tooltip = "text")
+    })
     
     
     # output$target_disease_num <- renderImage({
@@ -154,20 +154,20 @@ disease_trajectory_data_and_parameters_Server <- function(id) {
     # },deleteFile = TRUE)
     
     
-    output$include_diseases <- renderPlot({
+    output$include_diseases <- renderPlotly({
       req(data_preview())
-      data_preview()$include_diseases
-    },res = 144)
+      ggplotly(data_preview()$include_diseases,tooltip = "count")
+    })
     
-    output$disease_per_ind <- renderPlot({
+    output$disease_per_ind <- renderPlotly({
       req(data_preview())
-      data_preview()$diseases_per_ind
-    },res = 144)
+      ggplotly(data_preview()$diseases_per_ind,tooltip = "text")
+    })
     
-    output$case_control_num <- renderPlot({
+    output$case_control_num <- renderPlotly({
       req(data_preview())
-      data_preview()$cc_num
-    },res = 144)
+      ggplotly(data_preview()$cc_num,tooltip = "text")
+    })
     
     
     

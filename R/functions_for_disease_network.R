@@ -1125,14 +1125,16 @@ download_RData <- function(file_name,user,authorised_user){
 target_disease_number <- function(dat,target_disease,start_date,end_date){
   dat %>% filter(pid==target_disease) %>% group_by(value) %>% summarise(n=n()) %>% 
     ggplot()+
-    geom_col(mapping = aes(x=value,y=n)) + geom_vline(xintercept = as_date(c(start_date,end_date)),linetype=2,color="red") +
+    geom_col(mapping = aes(x=value,y=n,text=paste0("n:&nbsp;",n,"<br>date:&nbsp;",value))) + 
+    geom_vline(xintercept = as_date(c(start_date,end_date)) %>% as.numeric(),linetype=2,color="red") +
     xlab("Date")+ylab("Individual Number") + 
     ggtitle("Target Disease Cases")+
     # labs(title = "**Target Disease Cases**")+
     theme(axis.text = element_text(size=10),axis.title = element_text(size=10),
           plot.title=element_text(hjust = 0.5,size=10,face = "bold"))
-          # plot.title=ggtext::element_markdown(hjust = 0.5,size=10,face = "bold"))
+  # plot.title=ggtext::element_markdown(hjust = 0.5,size=10,face = "bold"))
 }
+
 
 
 
@@ -1162,10 +1164,10 @@ individual_disease_counted <- function(dat,start_date,end_date,min_disease_gap,t
   library(scales)
   disease_per_ind %>% count(n,name = "num") %>% 
     ggplot() +
-    geom_col(mapping = aes(x=n,y=num)) + 
+    geom_col(mapping = aes(x=n,y=num,text=paste0("Individuals:&nbsp;",num,"<br>Diseases:&nbsp;",n))) + 
     scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                   labels = trans_format("log10", math_format(10^.x))) +
-    xlab("Number of Diseases per Individual") + ylab("Individual Number")+
+    xlab("Number of Diseases per Individual") + ylab("Individual Number (log10)")+
     ggtitle("Number of Individuals with Different Numbers of Diseases")+
     theme(axis.text.x = element_text(size=10),
           axis.text.y = element_text(size=5),
@@ -1179,7 +1181,7 @@ case_control_num <- function(dat,target_disease,start_date,end_date,n_controls){
   controls <- cases*n_controls
   rbind(cases,controls) %>% as.data.frame() %>% rownames_to_column("type") %>% rename(number=2) %>% 
     ggplot() +
-    geom_col(mapping = aes(x=type,y=number),width=0.5) +
+    geom_col(mapping = aes(x=type,y=number,text=paste0("n:&nbsp;",number)),width=0.5) +
     xlab("Type") + ylab("Individual Number") +
     ggtitle("Number of Cases and Controls for Case-Control Analysis")+
     theme(axis.text = element_text(size=10),axis.title = element_text(size=10),
