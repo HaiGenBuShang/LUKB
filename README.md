@@ -76,4 +76,4 @@ If you like this tool, please cite:
 Xiangnan Li, Yaqi Huang, Shuming Wang, Meng Hao, Yi Li, Hui Zhang and Zixin Hu. LUKB: Preparing Local UK Biobank Data for Analysis. https://github.com/HaiGenBuShang/LUKB
 
 If you have any questions, please contact:
-xiangnan_li@fudan.edu.cn
+xiangnan.li@bcm.edu
